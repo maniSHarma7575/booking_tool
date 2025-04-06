@@ -18,8 +18,8 @@ module ListingFetcher
     headers = ApiClient.build_headers
     listings = []
 
-    check_in = '2025-04-07'
-    check_out = '2025-04-08'
+    check_in = Date.today.strftime('%Y-%m-%d')
+    check_out = (Date.today + 1).strftime('%Y-%m-%d')
     payload = ApiClient.build_search_body(address, page_size, check_in, check_out, lat, lng, rad)
     initial_response = ApiClient.fetch_from_api(API_URL, headers, payload)
 
