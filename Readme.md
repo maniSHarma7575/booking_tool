@@ -1,4 +1,4 @@
-# 🏨 Booking.com Listing Fetcher
+# 🏨 Booking.com - Property and Price Fetcher
 
 A CLI tool to fetch listings and prices from Booking.com given a location and radius.
 
