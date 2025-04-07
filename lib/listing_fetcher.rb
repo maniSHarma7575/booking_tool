@@ -47,7 +47,8 @@ module ListingFetcher
   end
 
   def self.future_dates
-    (0..11).map { |i| (Date.today >> i).strftime('%Y-%m-07') }
+    current_day = Date.today.day
+    (0..11).map { |i| (Date.today >> i).strftime("%Y-%m-#{format('%02d', current_day)}") }
   end
 
   private
