@@ -1,7 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+require_relative '../lib/location'
 require_relative '../lib/listing_fetcher'
+require_relative '../lib/csv_exporter'
 
 options = {
   radius: 3000,
@@ -21,6 +23,9 @@ unless options[:address]
   exit 1
 end
 
-lat, lng = ListingFetcher.fetch_coordinates(options[:address])
+lat, lng = Location.fetch_coordinates(options[:address])
+p "Coordinates for '#{options[:address]}': #{lat}, #{lng}"
+p "Fetching listings within #{options[:radius]} meters of '#{options[:address]}'..."
 listings = ListingFetcher.fetch_properties(options[:address], 50, lat, lng, options[:radius])
-ListingFetcher.save_to_csv(listings, options[:output])
+months = ListingFetcher.future_dates
+CSVExporter.new(listings, options[:output], months).export
