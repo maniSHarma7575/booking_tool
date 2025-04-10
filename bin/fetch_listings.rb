@@ -24,8 +24,24 @@ unless options[:address]
 end
 
 lat, lng = Location.fetch_coordinates(options[:address])
-p "Coordinates for '#{options[:address]}': #{lat}, #{lng}"
-p "Fetching listings within #{options[:radius]} meters of '#{options[:address]}'..."
+puts "Located coordinates for '#{options[:address]}': (#{lat}, #{lng})"
+
+puts "Searching for listings within #{options[:radius]} meters of '#{options[:address]}'..."
 listings = ListingFetcher.fetch_properties(options[:address], 50, lat, lng, options[:radius])
-months = ListingFetcher.future_dates
-CSVExporter.new(listings, options[:output], months).export
+
+days = ListingFetcher.future_dates
+
+if File.exist?(options[:output])
+  File.delete(options[:output])
+  puts "Removed existing output file: #{options[:output]}"
+end
+
+puts "Exporting listings and pricing data to #{options[:output]}..."
+
+listings.each do |listing|
+  prices = ListingFetcher.fetch_prices_for_a_year_for_listing(listing)
+  listing[:daily_prices] = prices
+  CSVExporter.new(listing, options[:output], days).export
+end
+
+puts "Export complete! Listings with pricing data saved to #{options[:output]}"

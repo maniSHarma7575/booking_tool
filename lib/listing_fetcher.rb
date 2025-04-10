@@ -25,30 +25,30 @@ module ListingFetcher
 
     listings = extract_listings(initial_response)
 
-    future_dates.each do |check_in_date|
-      check_out_date = (Date.parse(check_in_date) + 1).strftime('%Y-%m-%d')
-
-      begin
-        response = ApiClient::Client.search_hotels(
-          **common_params,
-          check_in: check_in_date,
-          check_out: check_out_date
-        )
-
-        results = response.dig('data', 'searchQueries', 'search', 'results') || []
-        update_monthly_prices(listings, results, check_in_date)
-      rescue => e
-        puts "Failed to fetch for #{check_in_date}: #{e.message}"
-        listings.each { |l| l[:monthly_prices][check_in_date] ||= nil }
-      end
-    end
-
     listings
   end
 
+  def self.fetch_prices_for_a_year_for_listing(listing)
+    today = Date.today
+    prices = {}
+    page_name = listing[:page_name]
+  
+    (0..(365 / 60)).each do |chunk_index|
+      start_date = today + (chunk_index * 60)
+      fetched_prices = fetch_prices_for_range(start_date, page_name)
+      prices.merge!(fetched_prices)
+  
+      # Sleep a little to avoid overwhelming the API
+      puts "😴 Sleeping briefly before the next price fetch..."
+      sleep(rand(0.5..1.0))
+    end
+  
+    prices
+  end
+
   def self.future_dates
-    current_day = Date.today.day
-    (0..11).map { |i| (Date.today >> i).strftime("%Y-%m-#{format('%02d', current_day)}") }
+    today = Date.today
+    (0...365).map { |i| (today + i).strftime('%Y-%m-%d') }
   end
 
   private
@@ -61,17 +61,28 @@ module ListingFetcher
         title: res.dig('displayName', 'text'),
         page_name: res.dig('basicPropertyData', 'pageName'),
         base_price: res.dig('priceDisplayInfoIrene', 'displayPrice', 'amountPerStay', 'amountUnformatted'),
-        monthly_prices: {}
       }
     end
   end
 
-  def self.update_monthly_prices(listings, results, check_in_date)
-    results.each do |result|
-      id = result.dig('basicPropertyData', 'id')
-      price = result.dig('priceDisplayInfoIrene', 'displayPrice', 'amountPerStay', 'amountUnformatted')
-      listing = listings.find { |l| l[:id] == id }
-      listing[:monthly_prices][check_in_date] = price if listing
+  def self.fetch_prices_for_range(start_date, page_name)
+    prices = {}
+    begin
+      response = ApiClient::Client.fetch_property_prices(
+        check_in: start_date.strftime('%Y-%m-%d'),
+        pagename: page_name
+      )
+
+      days = response.dig('data', 'availabilityCalendar', 'days') || []
+
+      days.each do |day|
+        checkin = day['checkin']
+        price = day['avgPrice']
+        prices[checkin] = price
+      end
+      prices
+    rescue => e
+      puts "Failed to fetch prices for #{page_name} from #{start_date}: #{e.message}"
     end
   end
 end

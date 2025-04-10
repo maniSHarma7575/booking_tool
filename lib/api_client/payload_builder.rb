@@ -108,5 +108,32 @@ module ApiClient
         query: Queries::SEARCH_PLACES
       }
     end
+
+    def self.availability(check_in:, pagename:, days: 30, country_code: "us")
+      {
+        extensions: {},
+        operationName: "AvailabilityCalendar",
+        query: Queries::AVAILABILITY_CALENDAR,
+        variables: {
+          input: {
+            pagenameDetails: {
+              countryCode: country_code,
+              pagename: pagename,
+            },
+            searchConfig: {
+              childrenAges: [],
+              nbAdults: 1,
+              nbChildren: 0,
+              nbRooms: 1,
+              searchConfigDate: {
+                amountOfDays: days,
+                startDate: check_in
+              }
+            },
+            travelPurpose: 2
+          }
+        }
+      }
+    end
   end
 end

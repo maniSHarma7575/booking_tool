@@ -32,5 +32,29 @@ module ApiClient
         }
       }
     GRAPHQL
+
+    AVAILABILITY_CALENDAR = <<~GRAPHQL
+      query AvailabilityCalendar($input: AvailabilityCalendarQueryInput!) {
+        availabilityCalendar(input: $input) {
+          ... on AvailabilityCalendarQueryResult {
+            hotelId
+            days {
+              available
+              avgPriceFormatted
+              avgPrice
+              checkin
+              minLengthOfStay
+              __typename
+            }
+            __typename
+          }
+          ... on AvailabilityCalendarQueryError {
+            message
+            __typename
+          }
+          __typename
+        }
+      }
+    GRAPHQL
   end
 end

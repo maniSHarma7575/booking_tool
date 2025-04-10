@@ -1,6 +1,6 @@
-# 🏨 Booking.com - Property and Price Fetcher
+# 🏨 Booking.com - Property and Daily Price Fetcher
 
-A CLI tool to fetch listings and prices from Booking.com given a location and radius.
+A CLI tool to fetch listings and daily prices from Booking.com given a location and radius.
 
 ## 📦 Requirements
 
